@@ -1,0 +1,18 @@
+{% block content %}
+    <form action="/prediction" method="post" novalidate>
+        <div>
+            <img src="{{url_for('static', filename='captain.jpg')}}" height="300px" style="float: left; margin: 0px 15px 15px 0px;"/>
+            <h1>Ahoy!</h1>
+            <p>
+                {{ form.image_url.label }}<br>
+                {{ form.image_url(size=100) }}<br>
+                <br>
+                {{ form.threshold.label }}<br>
+                {{ form.threshold(size=6) }}<br>
+                <br>
+                {{ form.submit() }}
+                {{ form.csrf_token }}
+            </p>
+    </form>
+
+{% endblock %}
