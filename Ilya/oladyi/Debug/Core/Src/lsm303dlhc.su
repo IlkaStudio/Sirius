@@ -1,0 +1,13 @@
+lsm303dlhc.c:17:6:MovingAverage	64	static
+lsm303dlhc.c:63:16:I2Cx_ReadData	40	static
+lsm303dlhc.c:71:13:I2Cx_WriteData	40	static
+lsm303dlhc.c:78:9:Accel_IO_Read	16	static
+lsm303dlhc.c:83:6:Accel_IO_Write	16	static
+lsm303dlhc.c:88:6:Accel_GetXYZ	40	static
+lsm303dlhc.c:143:6:Mag_GetXYZ	24	static
+lsm303dlhc.c:161:9:Accel_ReadID	16	static
+lsm303dlhc.c:168:6:AccelMag_Read	32	static
+lsm303dlhc.c:234:6:AccInit	24	static
+lsm303dlhc.c:243:6:MagInit	24	static
+lsm303dlhc.c:254:6:Accel_AccFilter	24	static
+lsm303dlhc.c:263:6:AccelMag_Ini	16	static
