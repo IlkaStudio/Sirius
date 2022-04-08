@@ -3,8 +3,8 @@
 extern I2C_HandleTypeDef hi2c1;
 extern UART_HandleTypeDef huart4;
 uint8_t buf2[14]={0};
-char str1[30]={0};
-char str2[30]={0};
+char str1[50]={0};
+char str2[50]={0};
 //������ ��� ����������� ��������
 volatile int16_t xbuf_avg[8]={0},ybuf_avg[8]={0},zbuf_avg[8]={0};
 //������� ���������� ������� ����������� ��������
@@ -165,6 +165,9 @@ uint8_t Accel_ReadID(void)
 	return ctrl;
 }
 //--------------------------------------------
+#include <stdbool.h>
+_Bool wave_detected = false;
+static int16_t massiv[500]={0};
 void AccelMag_Read(void)
 {
 	int16_t buffer[3] = {0};
@@ -177,62 +180,42 @@ void AccelMag_Read(void)
 	tmp16=buffer[2]; if(tmp16!=-4096) val[2]=tmp16+1204;
 	//������� ������ ����������� ��������
 	MovingAverage(val);
-	sprintf(str1,"Mag X:%06d Y:%06d Z:%06d\r\n", val[0], val[1], val[2]);
-	sprintf(str2,"Acell X:%06d Y:%06d Z:%06d\r\n", bufferAcess[0], bufferAcess[1], bufferAcess[2]);
-	HAL_UART_Transmit(&huart4, (uint8_t*)str2,strlen(str2),0x1000);
-	if(val[0]>60)
-	{
-		LD10_ON;
-		if(val[1]>60)
-		{
-			LD10_OFF;
-			LD9_ON;
-		}
-		if(val[1]<-60)
-		{
-			LD10_OFF;
-			LD8_ON;
-		}
-	}
-	else if(val[0]<-60)
-	{
-		LD3_ON;
-		if(val[1]>60)
-		{
-			LD3_OFF;
-			LD5_ON;
-		}
-		if(val[1]<-60)
-		{
-			LD3_OFF;
-			LD4_ON;
-		}	
-	}
-	else 
-	{
-		if(val[1]>1500)
-		{
-			LD7_ON;
-		}
-		if(val[1]<-1500)
-		{
-			LD6_ON;
-		}	
+//	sprintf(str1,"Mag X:%06d Y:%06d Z:%06d\r\n", val[0], val[1], val[2]);
+//	sprintf(str2,"Acell X:%06d Y:%06d Z:%06d\r\n", bufferAcess[0], bufferAcess[1], bufferAcess[2]);
+//	HAL_UART_Transmit(&huart4, (uint8_t*)str2,strlen(str2),0x1000);
+	static int16_t number=0;
+	massiv[number]=bufferAcess[1];
+
+	if (number<499)
+		number=number+1;
+	else
+		number=0;
+
+	uint16_t k=0;
+
+	for (int numbercell=0; numbercell<500; numbercell=numbercell+1){
+		if (massiv[numbercell] < 14000 | massiv[numbercell] > 18000)
+			k=k+1;
 	}
 
-	HAL_Delay(20);
-	LD3_OFF;
-	LD4_OFF;
-	LD5_OFF;
-	LD6_OFF;
-	LD7_OFF;
-	LD8_OFF;
-	LD9_OFF;
-	LD10_OFF;
+	char answer_str[100] = {0};
+	if (k>25){
+		wave_detected = true;
+		sprintf(answer_str, "Wave detected [DEBUG] k = %d\r\n", k);
+	}
+	else{
+		wave_detected = false;
+		sprintf(answer_str, "Wave not detected [DEBUG] k = %d\r\n", k);
+	}
+
+	HAL_UART_Transmit_DMA(&huart4, (uint8_t*)answer_str, strlen(answer_str));
+	HAL_Delay(500);
 }
 //--------------------------------------------
 void AccInit(uint16_t InitStruct)
 {
+
+	memset(massiv, 56, 500 * 2);
 	uint8_t ctrl = 0x00;
 	ctrl = (uint8_t) InitStruct;
 	Accel_IO_Write(0x32,LSM303DLHC_CTRL_REG1_A,ctrl);
